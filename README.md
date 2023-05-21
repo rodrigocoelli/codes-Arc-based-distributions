@@ -12,8 +12,8 @@ cmatrix neofetch
 
 # Reflector
 
-sudo systemctl enable reflector.timer
-sudo systemctl start reflector.timer
+sudo systemctl enable reflector.timer <br>
+sudo systemctl start reflector.timer <br>
 sudo systemctl start reflector.service
 
 # sudo nano /etc/pacman.conf
