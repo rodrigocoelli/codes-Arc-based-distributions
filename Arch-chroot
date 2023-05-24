@@ -1,0 +1,63 @@
+Se a sua máquina não inicializar devido a um problema de Bootloader ou atualização, há uma maneira de entrar em seu sistema através do terminal com Change of root, também conhecido como Chroot.
+
+Este é um modo de resgate onde você monta as partições do sistema instalado, como aconteceria em uma inicialização real do sistema operacional, e com a ajuda de um auxiliar chroot, você pode fazer login no sistema instalado e executar algumas tarefas de resgate.
+
+No nosso caso, temos o arch-chroot que ajuda a fazer o processo de montagem de algumas coisas necessárias no chroot necessárias para ser capaz de manter coisas relacionadas ao resgate dentro do chroot corretamente.
+
+Para poder usar arch-chroot estes são os passos a seguir:
+
+1. Inicialize no ISO do instalador do EndeavourOS (o próprio archiso também funcionará).
+
+2. Monte as partições necessárias.
+
+3. Execute arch-chroot para fazer login no sistema instalado. Execute tarefas de resgate como se você fosse inicializado no próprio sistema.
+
+Inicialize no ISO do instalador do EndeavourOS
+Inicialize o instalador ISO da mesma forma que você fez ao instalar o EndeavourOS, mas não execute o instalador.
+
+Montar partições necessárias
+Para ser capaz de chroot, você precisa saber como as partições e formato são configurados.
+
+Para descobrir essas informações, abra o terminal e digite:
+
+sudo lsblk -f
+
+Dependendo da maneira como você instalou o sistema operacional, você terá diferentes cenários.
+
+Ele pode ser ext4, BTRFS ou xfs formatado e você pode configurar a criptografia.
+
+Na maioria dos sistemas modernos, e se você não definir o Modo Bios legado no Firmware, você será executado no modo EFI e, neste caso, você terá uma partição fat32 (ESP = EFI-System-Partition) e sua partição do sistema se estiver usando ext4 ou xfs. Se você estiver usando BTRFS, você tem um esquema de subvolume em execução.
+
+Se você configurar a criptografia LUKS, precisará desbloquear a criptografia para poder montá-los.
+
+Neste exemplo, usamos uma configuração padrão do ext4 com o ESP montado em /efi (você encontrará outros modelos no final do artigo).
+
+No caso de sistemas Bios antigos ou legados, você terá apenas uma partição, então não precisará montar o ESP além disso.
+
+
+lsblk -f
+Então precisamos montar /dev/sda2 e o ESP (/dev/sda1) certifique-se de saber que seu ponto de montagem ESP em seu sistema instalado pode ser /efi ou /boot/efi (instalações mais antigas).
+
+Você verá no arquivo /etc/fstab do sistema instalado se não conseguir lembrar.
+
+sudo mount /dev/sda2 /mnt
+
+sudo cat /mnt/etc/fstab (para verificar o ponto de montagem do seu ESP)
+
+sudo mount /dev/sda1 /mnt/efi (ou /mnt/boot/efi)
+
+Agora seu sistema instalado está montado.
+
+Execute arch-chroot para fazer login no sistema instalado
+Com essas informações, você pode arch-chroot, então digite o seguinte comando:
+
+sudo arch-chroot /mnt
+
+Agora você fez chroot em seu sistema instalado e é capaz de acessar seus arquivos, instalar pacotes ou alterar scripts para resgatar seu sistema.
+
+Para se certificar de que o arch-chroot está funcionando, verifique após a pasta de início do usuário que deve fornecer seu nome de usuário do sistema instalado.ls /home
+
+
+Todos os comandos que você executar neste terminal agora serão executados como você os executaria em uma inicialização real do sistema.
+
+Você pode executar novamente uma atualização com falha, reconstruir imagens do kernel ou reinstalar pacotes desinstalados e corrigir configurações, etc
